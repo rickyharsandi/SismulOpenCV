@@ -78,3 +78,18 @@ int BacaJumlahFrame()
 {
 	return totalframe;
 }
+
+int BacaLebar()
+{
+	return (int)cvGetCaptureProperty(pointerscreenshot, CV_CAP_PROP_FRAME_WIDTH);
+}
+
+int BacaTinggi()
+{
+	return (int)cvGetCaptureProperty(pointerscreenshot, CV_CAP_PROP_FRAME_HEIGHT);
+}
+
+int BacaIndexFrame()
+{
+	return (int)cvGetCaptureProperty(pointerscreenshot,CV_CAP_PROP_POS_FRAMES );
+}
