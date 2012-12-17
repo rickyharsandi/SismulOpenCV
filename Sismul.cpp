@@ -93,3 +93,8 @@ int BacaIndexFrame()
 {
 	return (int)cvGetCaptureProperty(pointerscreenshot,CV_CAP_PROP_POS_FRAMES );
 }
+
+void PergiKeFrame(int frame)
+{
+	int x = cvSetCaptureProperty(pointerscreenshot, CV_CAP_PROP_POS_FRAMES, (double) frame );
+}
