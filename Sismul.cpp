@@ -5,9 +5,6 @@
  *      Author: renodesper
  */
 
-
-
-
 #include <cv.h>
 #include <cxcore.h>
 #include <highgui.h>
@@ -16,85 +13,30 @@
 #include <cxmisc.h>
 #include <ml.h>
 
-using namespace cv;
+ int main() {
+   CvCapture* capture = cvCaptureFromCAM( CV_CAP_ANY );
+   if ( !capture ) {
+     fprintf( stderr, "ERROR: capture is NULL \n" );
+     getchar();
+     return -1;
+   }
 
-bool BacaFileVideo(char* namafile);
-int BacaFrameRate();
-int BacaJumlahFrame();
-int BacaLebar();
-int BacaTinggi();
-int BacaIndexFrame();
-void PergiKeFrame(int);
-void StartVideo();
-void StartVideo(int awal, int akhir);
-void StopVideo();
-void UbahVideo(int awal, int akhir, char* lokasi);
-void SelisihkanFrames(int awal,int akhir);
+   cvNamedWindow( "OpenCV - Sistem Multimedia", CV_WINDOW_AUTOSIZE );
 
-int totalframe;
-CvCapture* pointerscreenshot;
+   while ( 1 ) {
 
-int main(int argc, char** argv) {
-	char* namafile;
-	IplImage* frame;
+     IplImage* frame = cvQueryFrame( capture );
+     if ( !frame ) {
+       fprintf( stderr, "ERROR: frame is null...\n" );
+       getchar();
+       break;
+     }
+     cvShowImage( "OpenCV - Sistem Multimedia", frame );
 
-	cvNamedWindow("OpenCV Video", CV_WINDOW_AUTOSIZE);
-/*	CvCapture* capture = cvCreateFileCapture("cursor.avi");
+     if ( (cvWaitKey(10) & 255) == 27 ) break;
+   }
 
-	while (1) {
-
-		frame = cvQueryFrame(capture);
-		if (!frame)
-			break;
-		cvShowImage("OpenCV Video", frame);
-
-		char c = cvWaitKey(33);
-		if (c == 27)
-			break;
-	}
-*/
-	cvReleaseCapture(&capture);
-	cvDestroyWindow("OpenCV Video");
-}
-
-bool BacaFileVideo(char* namafile)
-{
-	pointerscreenshot = cvCaptureFromFile(namafile);
-	if(!namafile)
-		return false;
-	if(!pointerscreenshot)
-		return false;
-
-	totalframe = (int)cvGetCaptureProperty(pointerscreenshot,CV_CAP_PROP_FRAME_COUNT);
-	return true;
-}
-
-int BacaFrameRate()
-{
-	return (int)cvGetCaptureProperty(pointerscreenshot,CV_CAP_PROP_FPS);
-}
-
-int BacaJumlahFrame()
-{
-	return totalframe;
-}
-
-int BacaLebar()
-{
-	return (int)cvGetCaptureProperty(pointerscreenshot, CV_CAP_PROP_FRAME_WIDTH);
-}
-
-int BacaTinggi()
-{
-	return (int)cvGetCaptureProperty(pointerscreenshot, CV_CAP_PROP_FRAME_HEIGHT);
-}
-
-int BacaIndexFrame()
-{
-	return (int)cvGetCaptureProperty(pointerscreenshot,CV_CAP_PROP_POS_FRAMES );
-}
-
-void PergiKeFrame(int frame)
-{
-	int x = cvSetCaptureProperty(pointerscreenshot, CV_CAP_PROP_POS_FRAMES, (double) frame );
-}
+   cvReleaseCapture( &capture );
+   cvDestroyWindow( "OpenCV - Sistem Multimedia" );
+   return 0;
+ }
