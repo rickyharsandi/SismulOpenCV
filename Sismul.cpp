@@ -113,11 +113,13 @@ int  main(){
 		allocateOnDemand(&eig_image, frame_size, IPL_DEPTH_32F, 3);
 		allocateOnDemand(&temp_image, frame_size, IPL_DEPTH_32F, 3);
 		
+		//Menyimpan fitur gerakan dari frame 1 pada array
 		CvPoint2D32f frame1_features[NUMBER_OF_FEATURES];
 
 		int nof;
 		nof = NUMBER_OF_FEATURES;
 
+		//Mencari fitur yang bisa dideteksi berdasarkan sudut (corner) lalu menyimpan fiturnya pada array
 		cvGoodFeaturesToTrack(frame1_1C, eig_image, temp_image, frame1_features, &nof, .05, .001, NULL);
 		CvPoint2D32f frame2_features[NUMBER_OF_FEATURES];
 
@@ -130,6 +132,7 @@ int  main(){
 		allocateOnDemand(&pyramid1, frame_size, IPL_DEPTH_8U, 1);
 		allocateOnDemand(&pyramid2, frame_size, IPL_DEPTH_8U, 1);
 
+		//Menjalankan algoritma piramida Lucas Kanade
 		cvCalcOpticalFlowPyrLK(frame1_1C, frame2_1C, pyramid1, pyramid2, frame1_features, frame2_features,
 							   nof, optical_flow_window, 5, optical_flow_found_feature,
 							   optical_flow_feature_error, optical_flow_termination_criteria, 0);
@@ -161,20 +164,25 @@ int  main(){
 			int line_thickness;
 			line_thickness = 1;
 
+			//Menggambar lingkaran sebagai titik awal gerakan
 			cvCircle(frame1, a, 2, CV_RGB(0, 255, 0), line_thickness, CV_AA);
 			cvCircle(frame1, b, 2, CV_RGB(0, 255, 0), line_thickness, CV_AA);
 
+			//Menggambar garis untuk menunjukan pergerakan
 			cvLine(frame1, a, b, CV_RGB(0, 0, 255), line_thickness, CV_AA);
 
+			//Menggambar garis untuk menunjukan kepala panah
 			a.x = (int) (b.x + 9 * cos(angle + PI / 4));
 			a.y = (int) (b.y + 9 * sin(angle + PI / 4));
 			cvLine(frame1, a, b, CV_RGB(0, 255, 0), line_thickness, CV_AA);
 
+			//Menggambar garis untuk menunjukan kepala panah
 			a.x = (int) (b.x + 9 * cos(angle - PI / 4));
 			a.y = (int) (b.y + 9 * sin(angle - PI / 4));
 			cvLine(frame1, a, b, CV_RGB(0, 255, 0), line_thickness, CV_AA);
 		}
 
+		//Khusus mendeteksi gerakan dari titik pusat frame (tengah)
 		CvPoint c, d;
 		c.x = frame_size.width / 2;
 		c.y = frame_size.height / 2;
@@ -190,6 +198,7 @@ int  main(){
 		d.x = (int) (c.x - hypotenuse * cos(angle));
 		d.y = (int) (c.y - hypotenuse * sin(angle));
 
+		//Menggambar garis untuk menunjukan titik pusat frame
 		cvLine(frame1, c, d, CV_RGB(255, 0, 0), line_thickness, CV_AA, 0);
 
 		xt = (abs(xt) > MIN_VECT_COMP) ? (50 * (xt > 0 ? -1 : 1)) : 0;
@@ -200,13 +209,16 @@ int  main(){
 
 		line_thickness = 3;
 
+		//Menggambar lingkaran sebagai titik awal gerakan dan garis untuk menunjukan pergerakan
 		cvCircle(frame1, c, 2, CV_RGB(255, 0, 0), line_thickness, CV_AA);
 		cvLine(frame1, c, d, CV_RGB(255, 0, 0), line_thickness, CV_AA, 0);
 
+		//Menggambar garis untuk menunjukan kepala panah
 		c.x = (int) (d.x + 9 * cos(angle + PI / 4));
 		c.y = (int) (d.y + 9 * sin(angle + PI / 4));
 		cvLine(frame1, c, d, CV_RGB(255, 0, 0), line_thickness, CV_AA, 0);
 
+		//Menggambar garis untuk menunjukan kepala panah
 		c.x = (int) (d.x + 9 * cos(angle - PI / 4));
 		c.y = (int) (d.y + 9 * sin(angle - PI / 4));
 		cvLine(frame1, c, d, CV_RGB(255, 0, 0), line_thickness, CV_AA, 0);
@@ -224,10 +236,5 @@ int  main(){
 
 	//Membersihkan memori yang telah digunakan
 	cvReleaseCapture(&capture);
-	cvReleaseImage(&grayframe0);
-	cvReleaseImage(&grayframe1);
-	cvReleaseImage(&graymovingframe);
-	cvReleaseImage(&frame1);
-
 	return 0;
 }
