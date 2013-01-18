@@ -3,6 +3,10 @@
  *
  *  Created on: Dec 17, 2012
  *      Author: renodesper
+ *
+ *      - Aus Firdaus		10109013
+ *      - Gilang Rahmat R	10109023
+ *      - Boy Sandy G. A.	10109030
  */
 
 #include <cv.h>
@@ -236,5 +240,9 @@ int  main(){
 
 	//Membersihkan memori yang telah digunakan
 	cvReleaseCapture(&capture);
+	cvDestroyWindow("Optical Flow");
+	cvDestroyWindow("Frame 1");
+	cvDestroyWindow("Frame 2");
+
 	return 0;
 }
