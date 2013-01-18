@@ -113,6 +113,110 @@ int  main(){
 		allocateOnDemand(&eig_image, frame_size, IPL_DEPTH_32F, 3);
 		allocateOnDemand(&temp_image, frame_size, IPL_DEPTH_32F, 3);
 		
+		CvPoint2D32f frame1_features[NUMBER_OF_FEATURES];
+
+		int nof;
+		nof = NUMBER_OF_FEATURES;
+
+		cvGoodFeaturesToTrack(frame1_1C, eig_image, temp_image, frame1_features, &nof, .05, .001, NULL);
+		CvPoint2D32f frame2_features[NUMBER_OF_FEATURES];
+
+		char optical_flow_found_feature[NUMBER_OF_FEATURES];
+		float optical_flow_feature_error[NUMBER_OF_FEATURES];
+
+		CvSize optical_flow_window = cvSize(3, 3);
+		CvTermCriteria optical_flow_termination_criteria = cvTermCriteria(CV_TERMCRIT_ITER | CV_TERMCRIT_EPS, 20, .1);
+
+		allocateOnDemand(&pyramid1, frame_size, IPL_DEPTH_8U, 1);
+		allocateOnDemand(&pyramid2, frame_size, IPL_DEPTH_8U, 1);
+
+		cvCalcOpticalFlowPyrLK(frame1_1C, frame2_1C, pyramid1, pyramid2, frame1_features, frame2_features,
+							   nof, optical_flow_window, 5, optical_flow_found_feature,
+							   optical_flow_feature_error, optical_flow_termination_criteria, 0);
+
+		double angle;
+		double hypotenuse;
+		double xt = 0, yt = 0;
+
+		for(int i = 0; i < nof; i++)
+		{
+			if (optical_flow_found_feature[i] == 0)
+				continue;
+
+			CvPoint a,b;
+			a.x = (int) frame1_features[i].x;
+			a.y = (int) frame1_features[i].y;
+			b.x = (int) frame2_features[i].x;
+			b.y = (int) frame2_features[i].y;
+
+			xt += (a.x - b.x);
+			yt += (a.y - b.y);
+
+			angle = atan2( (double) a.y - b.y, (double) a.x - b.x );
+			hypotenuse = sqrt(square(a.y - b.y) + square(a.x - b.x));
+
+			if (hypotenuse < 10 || hypotenuse > 100)
+				continue;
+
+			int line_thickness;
+			line_thickness = 1;
+
+			cvCircle(frame1, a, 2, CV_RGB(0, 255, 0), line_thickness, CV_AA);
+			cvCircle(frame1, b, 2, CV_RGB(0, 255, 0), line_thickness, CV_AA);
+
+			cvLine(frame1, a, b, CV_RGB(0, 0, 255), line_thickness, CV_AA);
+
+			a.x = (int) (b.x + 9 * cos(angle + PI / 4));
+			a.y = (int) (b.y + 9 * sin(angle + PI / 4));
+			cvLine(frame1, a, b, CV_RGB(0, 255, 0), line_thickness, CV_AA);
+
+			a.x = (int) (b.x + 9 * cos(angle - PI / 4));
+			a.y = (int) (b.y + 9 * sin(angle - PI / 4));
+			cvLine(frame1, a, b, CV_RGB(0, 255, 0), line_thickness, CV_AA);
+		}
+
+		CvPoint c, d;
+		c.x = frame_size.width / 2;
+		c.y = frame_size.height / 2;
+		d.x = c.x + xt;
+		d.y = c.y + yt;
+
+		angle = atan2(yt, xt);
+		hypotenuse = sqrt(square(yt) + square(xt));
+
+		int line_thickness;
+		line_thickness = 1;
+
+		d.x = (int) (c.x - hypotenuse * cos(angle));
+		d.y = (int) (c.y - hypotenuse * sin(angle));
+
+		cvLine(frame1, c, d, CV_RGB(255, 0, 0), line_thickness, CV_AA, 0);
+
+		xt = (abs(xt) > MIN_VECT_COMP) ? (50 * (xt > 0 ? -1 : 1)) : 0;
+		yt = (abs(yt) > MIN_VECT_COMP) ? (50 * (yt > 0 ? -1 : 1)) : 0;
+
+		d.x = c.x + xt;
+		d.y = c.y + yt;
+
+		line_thickness = 3;
+
+		cvCircle(frame1, c, 2, CV_RGB(255, 0, 0), line_thickness, CV_AA);
+		cvLine(frame1, c, d, CV_RGB(255, 0, 0), line_thickness, CV_AA, 0);
+
+		c.x = (int) (d.x + 9 * cos(angle + PI / 4));
+		c.y = (int) (d.y + 9 * sin(angle + PI / 4));
+		cvLine(frame1, c, d, CV_RGB(255, 0, 0), line_thickness, CV_AA, 0);
+
+		c.x = (int) (d.x + 9 * cos(angle - PI / 4));
+		c.y = (int) (d.y + 9 * sin(angle - PI / 4));
+		cvLine(frame1, c, d, CV_RGB(255, 0, 0), line_thickness, CV_AA, 0);
+
+		printf("%f %f %d\n", xt, yt, nof);
+
+		cvShowImage("Optical Flow", frame1);
+		cvShowImage("Frame 1", frame1_1C);
+		cvShowImage("Frame 2", frame2_1C);
+
 		//Keluar dari looping program menggunakan tombol escape
 		if ((cvWaitKey(10) & 255) == 27)
 			break;
