@@ -63,33 +63,26 @@ int  main(){
 	CvScalar hsv_max = cvScalar(50, 100, 255, 0);
 
 	//Menampilkan gambar yang ditangkap dari kamera
-	while(1){
-		//Mengekstrak frame 2 ke frame1
-		frame1 = cvQueryFrame(capture);
+	while(true){
+        	static IplImage *frame = NULL, *frame1 = NULL, *frame1_1C = NULL, *frame2_1C = NULL, *eig_image = NULL, *temp_image = NULL, *pyramid1 = NULL, *pyramid2 = NULL;
 
-		//Konversi dari RGB ke Gray
-		cvCvtColor(frame0,grayframe0,CV_RGB2GRAY);
-		cvCvtColor(frame1,grayframe1,CV_RGB2GRAY);
+		//Mengambil frame dari pointer capture dan cek ketersediaan frame
+		frame = cvQueryFrame(capture);
+		if (frame == NULL)
+		{
+			fprintf(stderr, "Error: Frame 1 tidak ditemukan\n");
+			return -1;
+		}
 
-		//Menghitung perbedaan antar-frame
-		cvAbsDiff(grayframe0,grayframe1,graymovingframe);
-		cvAbsDiff(frame0,frame1,movingframe);
-
-		//Menampilkan gambar asli
-		cvShowImage("Original Image",frame1);
-
-		//Menampilkan perbedaan antar-frame dari gambar-gambar Gray
-		cvShowImage("Gray Image Difference ",graymovingframe);
-
-		//Menampilkan perbedaan antar-frame dari gambar-gambar RGB
-		cvShowImage("RGB Image Difference ",movingframe);
+		//Mengalokasikan memori untuk frame yang diambil
+		allocateOnDemand(&temp_image, frame_size, IPL_DEPTH_8U, 3);
+		allocateOnDemand(&frame1, frame_size, IPL_DEPTH_8U, 3);
+		cvConvertImage(frame, frame1);
+		allocateOnDemand(&frame1_1C, frame_size, IPL_DEPTH_8U, 1);
 
 		//Keluar dari looping program menggunakan tombol escape
 		if ((cvWaitKey(10) & 255) == 27)
 			break;
-
-		//Mengkopi frame1 ke frame0
-		cvCopy(frame1, frame0);
 	}
 
 	//Membersihkan memori yang telah digunakan
