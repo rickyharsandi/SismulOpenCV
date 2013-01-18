@@ -66,7 +66,7 @@ int  main(){
 	while(true){
         	static IplImage *frame = NULL, *frame1 = NULL, *frame1_1C = NULL, *frame2_1C = NULL, *eig_image = NULL, *temp_image = NULL, *pyramid1 = NULL, *pyramid2 = NULL;
 
-		//Mengambil frame dari pointer capture dan cek ketersediaan frame
+		//Mengambil frame (Frame 1) dari pointer capture dan cek ketersediaan frame
 		frame = cvQueryFrame(capture);
 		if (frame == NULL)
 		{
@@ -76,10 +76,43 @@ int  main(){
 
 		//Mengalokasikan memori untuk frame yang diambil
 		allocateOnDemand(&temp_image, frame_size, IPL_DEPTH_8U, 3);
+		
+		//Membuat backup dari Frame 1
 		allocateOnDemand(&frame1, frame_size, IPL_DEPTH_8U, 3);
 		cvConvertImage(frame, frame1);
+		
+		//Mengalokasikan memori untuk frame dengan 1 channel
 		allocateOnDemand(&frame1_1C, frame_size, IPL_DEPTH_8U, 1);
 
+		//Mengubah frame dari BGR menjadi HSV
+		cvCvtColor(frame, temp_image, CV_BGR2HSV);
+		cvInRangeS(temp_image, hsv_min, hsv_max, frame1_1C);
+		cvSet(temp_image, cvScalar(0, 0, 0, 0));
+		cvCopy(frame, temp_image, frame1_1C);
+		cvConvertImage(temp_image, frame1_1C);
+
+		//Mengambil frame selanjutnya (Frame 2) dari pointer capture dan cek ketersediaan frame
+		frame = cvQueryFrame(capture);
+		if (frame == NULL)
+		{
+			fprintf(stderr, "Error: Frame 2 tidak ditemukan\n");
+			return -1;
+		}
+
+		//Mengalokasikan memori untuk frame dengan 1 channel
+		allocateOnDemand(&frame2_1C, frame_size, IPL_DEPTH_8U, 1);
+
+		//Mengubah frame dari BGR menjadi HSV
+		cvCvtColor(frame, temp_image, CV_BGR2HSV);
+		cvInRangeS(temp_image, hsv_min, hsv_max, frame2_1C);
+		cvSet(temp_image, cvScalar(0, 0, 0, 0));
+		cvCopy(frame, temp_image, frame2_1C);
+		cvConvertImage(temp_image, frame2_1C);
+
+		//Mengalokasikan memori untuk Pendeteksi Fitur (Gerakan) Shi dan Tomasi
+		allocateOnDemand(&eig_image, frame_size, IPL_DEPTH_32F, 3);
+		allocateOnDemand(&temp_image, frame_size, IPL_DEPTH_32F, 3);
+		
 		//Keluar dari looping program menggunakan tombol escape
 		if ((cvWaitKey(10) & 255) == 27)
 			break;
